@@ -108,10 +108,10 @@ def run(context):
             if orientation == 'left':
                 if csPt == 1:
                     transform2.translation = adsk.core.Vector3D.create(a*xv-0.5, b*yv, c*zv)
-                elif csPt == 13 or 15 <= csPt <= 17:
+                elif csPt == 13 or 15 < csPt <= 17:
                     transform2.translation = adsk.core.Vector3D.create(a*xv+0.25, b*yv, c*zv)
-                elif csPt == 23:
-                    transform2.translation = adsk.core.Vector3D.create(a*xv-1, b*yv, c*zv)
+                # elif csPt == 23:
+                #     transform2.translation = adsk.core.Vector3D.create(a*xv-1, b*yv, c*zv)
                 elif csPt == 21:
                     transform2.translation = adsk.core.Vector3D.create(a*xv-0.25, b*yv, c*zv)
                 elif csPt == 22:
@@ -120,17 +120,30 @@ def run(context):
                     transform2.translation = adsk.core.Vector3D.create(a*xv, b*yv, c*zv)
             else:
                 if csPt == 13:
-                    transform2.translation = adsk.core.Vector3D.create(a*xv+0.5, b*yv, c*zv)
-                elif csPt == 1 or 21 <= csPt <= 23:
-                    transform2.translation = adsk.core.Vector3D.create(a*xv-0.25, b*yv, c*zv)
-                elif csPt == 15:
-                    transform2.translation = adsk.core.Vector3D.create(a*xv+1, b*yv, c*zv)
+                    if i != 15:
+                        transform2.translation = adsk.core.Vector3D.create(a*xv+0.5, b*yv, c*zv)
+                    else:
+                        transform2.translation = adsk.core.Vector3D.create(a*xv+0.2, b*yv, c*zv)
+                elif csPt == 1 or 21 <= csPt < 23:
+                    if i != 23:
+                        transform2.translation = adsk.core.Vector3D.create(a*xv-0.25, b*yv, c*zv)
+                    else:
+                        transform2.translation = adsk.core.Vector3D.create(a*xv-.45, b*yv, c*zv)
+                # elif csPt == 15:
+                #     transform2.translation = adsk.core.Vector3D.create(a*xv+1, b*yv, c*zv)
                 elif csPt == 17:
                     transform2.translation = adsk.core.Vector3D.create(a*xv+0.25, b*yv, c*zv)
                 elif csPt == 16:
                     transform2.translation = adsk.core.Vector3D.create(a*xv+0.5, b*yv, c*zv)
                 else:
                     transform2.translation = adsk.core.Vector3D.create(a*xv, b*yv, c*zv)
+
+                # if i == 23:
+                #     transform2.translation = adsk.core.Vector3D.create(a*xv-0.2, b*yv, c*zv)
+                # elif i == 15:
+                #     transform2.translation = adsk.core.Vector3D.create(a*xv+0.3, b*yv, c*zv)
+
+                #, fix cs-22 and cs-16, fix cs-23 and cs-15 for right legs  
 
 
 
@@ -324,9 +337,9 @@ def run(context):
     global_move(4)  #have to do CS-4 last cuz thats my to and from point
 
     for i in range(1,25):
-        if i == 2 or i == 3 or i == 24:
+        if i == 2 or i == 3 or i == 24 or i == 23:
             cs_mover(i,1,1)
-        elif i == 11 or i == 12 or i == 14:
+        elif i == 11 or i == 12 or i == 14 or i == 15:
             cs_mover(i,13,13)
         elif 6 <= i <= 8 or 18 <= i <= 20:
             cs_mover(i,i,i,1,1)
