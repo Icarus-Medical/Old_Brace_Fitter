@@ -23,55 +23,6 @@ def run(context):
     features = root.features
 
 
-    def point_create(x,y,z,i):
-
-        sk = root.sketches
-        xzPlane = root.xZConstructionPlane
-        sketch = sk.add(xzPlane)
-        #sketch.name = name
-
-        sketchPts = sketch.sketchPoints
-        point = adsk.core.Point3D.create(x, y, z)
-        sketchPts.add(point)
-        if 0 < i < 8:
-            sketch.name = 'pt' + str(i+3)
-        elif i == 8:
-            sketch.name = 'pt13'
-        elif 8 < i < 18:
-            sketch.name = 'pt' + str(i+6)
-        else:
-            sketch.name = 'pt' + str(i+1)
-
-    def extract(csv_name):
-                dlg = ui.createFileDialog()
-                dlg.title = csv_name
-                dlg.filter = 'Comma Separated Values (*.csv);;All Files (*.*)'
-                if dlg.showOpen() != adsk.core.DialogResults.DialogOK :
-                    return
-
-                filename = dlg.filename
-                f = open(filename, 'r')
-
-                names = []
-                xco = []
-                yco = []
-                zco = []
-
-                for line in f.readlines():
-                    array = line.split(',')
-                    xco.append(array[0].replace('\n', ''))
-                    yco.append(array[1].replace('\n', ''))
-                    zco.append(array[2].replace('\n', ''))
-                    #names.append(array[0].replace('\n', ''))
-
-
-                #for loop that calls point_create at index i of each list
-                for i in range(0,18):
-                    if xco[i] == '':
-                        point_create(0,0,0,i)
-                    else:
-                        point_create(float(xco[i])*0.1,float(yco[i])*-0.1,float(zco[i])*0.1,i)
-    extract('CSV_Test')
 
     def cs_mover(i, csPt, fitPt, a=1,b=0,c=0):
         #function that moves Cross section i to the fit pt as well as the IPs Bips and Splines
@@ -106,35 +57,17 @@ def run(context):
             transform2.translation = adsk.core.Vector3D.create(0, 0, 0)
         else:
             if orientation == 'left':
-                if csPt == 1:
-                    transform2.translation = adsk.core.Vector3D.create(a*xv-0.5, b*yv, c*zv)
-                elif csPt == 13 or 15 < csPt <= 17:
+                if csPt == 16 or csPt == 17:
                     transform2.translation = adsk.core.Vector3D.create(a*xv+0.25, b*yv, c*zv)
-                # elif csPt == 23:
-                #     transform2.translation = adsk.core.Vector3D.create(a*xv-1, b*yv, c*zv)
-                elif csPt == 21:
+                elif csPt == 22 or csPt == 21:
                     transform2.translation = adsk.core.Vector3D.create(a*xv-0.25, b*yv, c*zv)
-                elif csPt == 22:
-                    transform2.translation = adsk.core.Vector3D.create(a*xv-0.5, b*yv, c*zv)
                 else:
                     transform2.translation = adsk.core.Vector3D.create(a*xv, b*yv, c*zv)
             else:
-                if csPt == 13:
-                    if i != 15:
-                        transform2.translation = adsk.core.Vector3D.create(a*xv+0.5, b*yv, c*zv)
-                    else:
-                        transform2.translation = adsk.core.Vector3D.create(a*xv+0.2, b*yv, c*zv)
-                elif csPt == 1 or 21 <= csPt < 23:
-                    if i != 23:
-                        transform2.translation = adsk.core.Vector3D.create(a*xv-0.25, b*yv, c*zv)
-                    else:
-                        transform2.translation = adsk.core.Vector3D.create(a*xv-.45, b*yv, c*zv)
-                # elif csPt == 15:
-                #     transform2.translation = adsk.core.Vector3D.create(a*xv+1, b*yv, c*zv)
-                elif csPt == 17:
+                if csPt == 16 or csPt == 17:
                     transform2.translation = adsk.core.Vector3D.create(a*xv+0.25, b*yv, c*zv)
-                elif csPt == 16:
-                    transform2.translation = adsk.core.Vector3D.create(a*xv+0.5, b*yv, c*zv)
+                elif csPt == 22 or csPt == 21:
+                    transform2.translation = adsk.core.Vector3D.create(a*xv-0.25, b*yv, c*zv)
                 else:
                     transform2.translation = adsk.core.Vector3D.create(a*xv, b*yv, c*zv)
 
@@ -150,53 +83,169 @@ def run(context):
         sk.move(group, transform2)
 
         #moves IP or BIP with the cross section
-        if  0 < i < 14:
-            ip_mover(i,transform2)
-            spline_mover('Pipe-rail-1',transform2,i-1)
-        elif i == 14 or i == 24:
-            ip_mover(i,transform2,1)
+
 
         #Specifics on moving spline points with CS, i changes for rail-3 and rail-4 due to unconnected spline points by the gears.
-        spline_mover('rail-1',transform2,i-1)
+
         spline_mover('rail-2',transform2,i-1)
-        if i == 1:
-            spline_mover('rail-3', transform2,i-1)
-            spline_mover('rail-4', transform2,i-1)
-            spline_mover('rail-3', transform2,i)
-            spline_mover('rail-4', transform2,i)
-        elif 1 < i < 13:
-            spline_mover('rail-3', transform2,i)
-            spline_mover('rail-4', transform2,i)
-        elif i == 13:
-            spline_mover('rail-3', transform2,i)
-            spline_mover('rail-4', transform2,i)
-            spline_mover('rail-3', transform2,i+1)
-            spline_mover('rail-4', transform2,i+1)
-        elif i == 14:
-            spline_mover('rail-3', transform2,i+1)
-            spline_mover('rail-4', transform2,i+1)
-            spline_mover('rail-3', transform2,i+2)
-            spline_mover('rail-4', transform2,i+2)
-        elif i == 15:
-            spline_mover('rail-3', transform2,i+2)
-            spline_mover('rail-4', transform2,i+2)
-            spline_mover('rail-3', transform2,i+3)
-            spline_mover('rail-4', transform2,i+3)
-        elif 15 < i < 23:
-            spline_mover('rail-3', transform2,i+3)
-            spline_mover('rail-4', transform2,i+3)
-        elif i == 23:
-            spline_mover('rail-3', transform2,i+3)
-            spline_mover('rail-4', transform2,i+3)
-            spline_mover('rail-3', transform2,i+4)
-            spline_mover('rail-4', transform2,i+4)
-        elif i == 24:
-            spline_mover('rail-3', transform2,i+4)
-            spline_mover('rail-4', transform2,i+4)
-            spline_mover('rail-3', transform2,i+5)
-            spline_mover('rail-4', transform2,i+5)
+        
+
+        if orientation == 'right':
+            if  0 < i < 5:
+                spline_mover('Pipe-rail-1',transform2,i-1)
+                ip_mover(i,transform2)
+            elif i == 5:
+                ip_mover(i-0.5,transform2)
+                ip_mover(i,transform2)
+                spline_mover('Pipe-rail-1',transform2,i-1)
+                spline_mover('Pipe-rail-1',transform2,i)
+                spline_mover('Pipe-rail-1',transform2,i+1)
+            elif 5 < i < 14:
+                spline_mover('Pipe-rail-1',transform2,i+1)
+                ip_mover(i,transform2)
+            elif i == 14 or i == 24:
+                ip_mover(i,transform2,1)
+        
+            if i == 1:
+                spline_mover('rail-3', transform2,i-1)
+                spline_mover('rail-4', transform2,i-1)
+                spline_mover('rail-3', transform2,i)
+                spline_mover('rail-4', transform2,i)
+            elif 1 < i < 4:
+                spline_mover('rail-3', transform2,i)
+                spline_mover('rail-4', transform2,i)            
+            elif i == 4:
+                spline_mover('rail-3', transform2,i)
+                spline_mover('rail-4', transform2,i)
+                spline_mover('rail-3', transform2,i+1)
+                spline_mover('rail-4', transform2,i+1)
+            elif i == 5:
+                spline_mover('rail-3', transform2,i+1)
+                spline_mover('rail-4', transform2,i+1)
+                spline_mover('rail-3', transform2,i+2)
+                spline_mover('rail-4', transform2,i+2)
+                spline_mover('rail-3', transform2,i+3)
+                spline_mover('rail-4', transform2,i+3)
+                spline_mover('rail-1', transform2,i-1)
+                spline_mover('rail-1', transform2,i)
+                spline_mover('rail-1', transform2,i+1)
+            elif 5 < i < 13:
+                spline_mover('rail-3', transform2,i+3)
+                spline_mover('rail-4', transform2,i+3)
+            elif i == 13:
+                spline_mover('rail-3', transform2,i+3)
+                spline_mover('rail-4', transform2,i+3)
+                spline_mover('rail-3', transform2,i+4)
+                spline_mover('rail-4', transform2,i+4)
+            elif i == 14:
+                spline_mover('rail-3', transform2,i+4)
+                spline_mover('rail-4', transform2,i+4)
+                spline_mover('rail-3', transform2,i+5)
+                spline_mover('rail-4', transform2,i+5)
+            elif i == 15:
+                spline_mover('rail-3', transform2,i+5)
+                spline_mover('rail-4', transform2,i+5)
+                spline_mover('rail-3', transform2,i+6)
+                spline_mover('rail-4', transform2,i+6)
+            elif 15 < i < 23:
+                spline_mover('rail-3', transform2,i+6)
+                spline_mover('rail-4', transform2,i+6)
+            elif i == 23:
+                spline_mover('rail-3', transform2,i+6)
+                spline_mover('rail-4', transform2,i+6)
+                spline_mover('rail-3', transform2,i+7)
+                spline_mover('rail-4', transform2,i+7)
+            elif i == 24:
+                spline_mover('rail-3', transform2,i+7)
+                spline_mover('rail-4', transform2,i+7)
+                spline_mover('rail-3', transform2,i+8)
+                spline_mover('rail-4', transform2,i+8)
+            else:
+                areWeGood = 'we good'
+
+            if 1 <= i < 5:
+                spline_mover('rail-1',transform2,i-1)
+            elif i > 5:
+                spline_mover('rail-1',transform2,i+1)
         else:
-            areWeGood = 'we good'
+            if  0 < i < 9:
+                spline_mover('Pipe-rail-1',transform2,i-1)
+                ip_mover(i,transform2)
+            elif i == 9:
+                ip_mover(i+0.5,transform2)
+                ip_mover(i,transform2)
+                spline_mover('Pipe-rail-1',transform2,i-1)
+                spline_mover('Pipe-rail-1',transform2,i)
+                spline_mover('Pipe-rail-1',transform2,i+1)
+            elif 9 < i < 14:
+                spline_mover('Pipe-rail-1',transform2,i+1)
+                ip_mover(i,transform2)
+            elif i == 14 or i == 24:
+                ip_mover(i,transform2,1)
+
+            if i == 1:
+                spline_mover('rail-3', transform2,i-1)
+                spline_mover('rail-4', transform2,i-1)
+                spline_mover('rail-3', transform2,i)
+                spline_mover('rail-4', transform2,i)
+            elif 1 < i < 9:
+                spline_mover('rail-3', transform2,i)
+                spline_mover('rail-4', transform2,i) 
+            elif i == 9:
+                spline_mover('rail-3', transform2,i)
+                spline_mover('rail-4', transform2,i)
+                spline_mover('rail-3', transform2,i+1)
+                spline_mover('rail-4', transform2,i+1)
+                spline_mover('rail-3', transform2,i+2)
+                spline_mover('rail-4', transform2,i+2)
+                spline_mover('rail-1', transform2,i-1)
+                spline_mover('rail-1', transform2,i)
+                spline_mover('rail-1', transform2,i+1)
+            elif i == 10:
+                spline_mover('rail-3', transform2,i+2)
+                spline_mover('rail-4', transform2,i+2)
+                spline_mover('rail-3', transform2,i+3)
+                spline_mover('rail-4', transform2,i+3)
+            elif 10 < i < 13:
+                spline_mover('rail-3', transform2,i+3)
+                spline_mover('rail-4', transform2,i+3)
+            elif i == 13:
+                spline_mover('rail-3', transform2,i+3)
+                spline_mover('rail-4', transform2,i+3)
+                spline_mover('rail-3', transform2,i+4)
+                spline_mover('rail-4', transform2,i+4)
+            elif i == 14:
+                spline_mover('rail-3', transform2,i+4)
+                spline_mover('rail-4', transform2,i+4)
+                spline_mover('rail-3', transform2,i+5)
+                spline_mover('rail-4', transform2,i+5)
+            elif i == 15:
+                spline_mover('rail-3', transform2,i+5)
+                spline_mover('rail-4', transform2,i+5)
+                spline_mover('rail-3', transform2,i+6)
+                spline_mover('rail-4', transform2,i+6)
+            elif 15 < i < 23:
+                spline_mover('rail-3', transform2,i+6)
+                spline_mover('rail-4', transform2,i+6)
+            elif i == 23:
+                spline_mover('rail-3', transform2,i+6)
+                spline_mover('rail-4', transform2,i+6)
+                spline_mover('rail-3', transform2,i+7)
+                spline_mover('rail-4', transform2,i+7)
+            elif i == 24:
+                spline_mover('rail-3', transform2,i+7)
+                spline_mover('rail-4', transform2,i+7)
+                spline_mover('rail-3', transform2,i+8)
+                spline_mover('rail-4', transform2,i+8)
+            else:
+                areWeGood = 'we good'
+
+
+            if 1 <= i < 9:
+                spline_mover('rail-1',transform2,i-1)
+            elif i > 9:
+                spline_mover('rail-1',transform2,i+1)
+
 
         #move gears with hinge cross section
         occ = root.occurrences.itemByName('HINGE:1')
@@ -320,42 +369,70 @@ def run(context):
 
     def extract_fitPt(i):
         #function to grab coordinates of fitPt
-        sk = root.sketches.itemByName('pt'+str(i))
-        fitPt = sk.sketchPoints.item(1).worldGeometry
+        leg = root.meshBodies.item(0)
+        legMesh = leg.mesh
+        nodes = legMesh.nodeCoordinates
+
+        sk = root.sketches.itemByName('CS-'+str(i))
+        lineM = sk.sketchCurves.sketchLines.item(1)
+        skpntM = lineM.startSketchPoint
+        csPt = skpntM.worldGeometry
+
+        nodeSlice = adsk.core.ObjectCollection.create()
+        nodeSliceX = adsk.core.ObjectCollection.create()
+        nodeSliceY = adsk.core.ObjectCollection.create()
+        for node in nodes:
+            if csPt.z-0.5 < node.z < csPt.z+0.5:
+                nodeSlice.add(node)
+
+        dX = 1000
+        if 6<= i <= 8 or 18 <= i <= 20:
+            for node in nodeSlice:
+                if csPt.x - 0.5 < node.x < csPt.x + 0.5:
+                    nodeSliceX.add(node)
+            for node in nodeSliceX:
+                if abs(node.y - csPt.y) < dX:
+                    fitPt = node
+                    dX = abs(node.y - csPt.y)
+        elif i ==5 or i == 9 or i == 17 or i == 21:
+            for node in nodeSlice:
+                if csPt.y - 0.5 < node.y < csPt.y + 0.5:
+                    nodeSliceY.add(node)
+            for node in nodeSliceY:
+                if abs(node.x - csPt.x) < dX:
+                    fitPt = node
+                    dX = abs(node.x - csPt.x)
+        else:
+            for node in nodeSlice:
+                if abs(node.x - csPt.x) < dX:
+                    fitPt = node
+                    dX = abs(node.x - csPt.x)
 
         return fitPt
 
-    def global_move(i):
-        cs_mover(i,4,4,0,1,0)
-        #function to globally shift every sketch in the y-direction to allign with fit point depth (gears too)
+    # def global_move(i):
+    #     cs_mover(i,4,4,0,1,0)
+    #     #function to globally shift every sketch in the y-direction to allign with fit point depth (gears too)
 
-    for i in range(1,25):
-        if i != 4:
-            global_move(i)
-        else:
-            chill = 'chill'
-    global_move(4)  #have to do CS-4 last cuz thats my to and from point
-
+    # for i in range(1,25):
+    #     if i != 4:
+    #         global_move(i)
+    #     else:
+    #         chill = 'chill'
+    # global_move(4)  #have to do CS-4 last cuz thats my to and from point
+    # cs_mover(1,1,1)
+    # cs_mover(2,1,1)
+    # cs_mover(3,3,3)
     for i in range(1,25):
         if i == 2 or i == 3 or i == 24 or i == 23:
             cs_mover(i,1,1)
         elif i == 11 or i == 12 or i == 14 or i == 15:
             cs_mover(i,13,13)
         elif 6 <= i <= 8 or 18 <= i <= 20:
-            cs_mover(i,i,i,1,1)
+            cs_mover(i,i,i,0,1)
         elif i != 1 and i != 13:
             cs_mover(i,i,i)
     cs_mover(1,1,1)
     cs_mover(13,13,13)
 
-    loner_spline(orientation)
-
-
-
-
-                # sketch = adsk.core.ObjectCollection.create()
-                # sketch.add(sk)
-                # #apply actual rotation
-                # moveFeats = features.moveFeatures
-                # moveFeatureInput = moveFeats.createInput(sketch, transform2)
-                # moveFeats.add(moveFeatureInput)
+    #loner_spline(orientation)
